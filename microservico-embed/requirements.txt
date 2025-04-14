@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+transformers==4.51.0
+torch>=2.0
+python-dotenv
+requests
+faiss-cpu
+pymongo
+sentencepiece
+datasets
+accelerate>=0.26.0
+huggingface-hub>=0.22.2

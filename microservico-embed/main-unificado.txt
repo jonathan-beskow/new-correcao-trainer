@@ -1,0 +1,249 @@
+import os
+import faiss
+import numpy as np
+import torch
+
+from pydantic import BaseModel
+from pymongo import MongoClient
+from dotenv import load_dotenv
+from transformers import (
+    AutoTokenizer, AutoModel,
+    AutoModelForSeq2SeqLM
+)
+from datetime import datetime
+from fastapi import Request, APIRouter
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Body, Request
+
+
+# 🔄 Carregar variáveis de ambiente
+load_dotenv()
+
+app = FastAPI()
+@app.on_event("startup")
+async def startup_event():
+    print("🔄 Reindexando todos os casos corrigidos ao iniciar a API...")
+    reindexar_todos()
+
+
+# 🔐 MongoDB
+print("Conectando ao MongoDB...")
+client = MongoClient("mongodb://host.docker.internal:27017/")
+db = client["corretor_db"]
+collection = db["casosCorrigidos"]
+print("Conectado ao MongoDB com sucesso.")
+
+# 🤖 Modelos
+print("Carregando modelo CodeBERT...")
+tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
+model = AutoModel.from_pretrained("microsoft/codebert-base")
+print("Modelo CodeBERT carregado com sucesso.")
+
+print("Carregando modelo CodeT5 fine-tunado...")
+codet5_model_path = "./codet5-finetuned-vulnerabilities-trainer"
+codet5_tokenizer = AutoTokenizer.from_pretrained(codet5_model_path)
+codet5_model = AutoModelForSeq2SeqLM.from_pretrained(codet5_model_path)
+print("Modelo CodeT5 carregado com sucesso.")
+
+# 🧠 FAISS
+index = faiss.IndexFlatL2(768)
+codigo_id_map = []
+
+# 📦 Schemas
+class SimilaridadeRequest(BaseModel):
+    codigo: str
+    tipo: str
+    k: int = 1
+
+class CodeT5Request(BaseModel):
+    tipo: str
+    exemplo: str
+    correcao: str
+    alvo: str
+
+class NovoCasoRequest(BaseModel):
+    tipo: str
+    codigoOriginal: str
+    codigoCorrigido: str
+    justificativa: str = "Cadastro manual"
+
+
+@app.get("/check")
+def check_connection():
+    return {"status": "OK"}
+
+@app.post("/adicionar_bloco")
+async def adicionar_bloco(request: Request):
+    body = await request.json()
+    blocoAntes = body["blocoAntes"]
+    blocoDepois = body["blocoDepois"]
+    tipo = body["tipo"]
+    origemId = body["origemId"]
+    nomeMetodo = body["nomeMetodo"]
+
+    embedding = gerar_embedding(blocoAntes)
+
+    db["casosCorrigidosBlocos"].insert_one({
+        "blocoAntes": blocoAntes,
+        "blocoDepois": blocoDepois,
+        "tipo": tipo,
+        "origemId": origemId,
+        "nomeMetodo": nomeMetodo,
+        "embedding": embedding,
+        "criadoEm": datetime.utcnow()
+    })
+
+    return {"status": "bloco adicionado"}
+
+@app.post("/adicionar")
+async def adicionar_caso(caso: NovoCasoRequest):
+    entrada = f"{caso.tipo}: {caso.codigoOriginal}"
+    embedding = gerar_embedding(entrada)
+
+    doc = {
+        "tipo": caso.tipo,
+        "linguagem": caso.linguagem,
+        "codigoOriginal": caso.codigoOriginal,
+        "codigoCorrigido": caso.codigoCorrigido,
+        "justificativa": caso.justificativa,
+        "criadoEm": datetime.utcnow(),
+        "embedding": embedding
+    }
+
+    # Inserir no Mongo
+    result = collection.insert_one(doc)
+
+    # Adicionar ao índice FAISS
+    index.add(np.array([embedding]))
+    codigo_id_map.append(caso.codigoOriginal)
+
+    return {"status": "caso adicionado com sucesso", "id": str(result.inserted_id)}
+
+
+def reindexar_todos():
+    global index, codigo_id_map
+
+    index = faiss.IndexFlatL2(768)
+    codigo_id_map = []
+
+    documentos = list(collection.find({
+        "codigoOriginal": {"$exists": True, "$ne": ""},
+        "codigoCorrigido": {"$exists": True, "$ne": ""}
+    }))
+
+    if not documentos:
+        print("⚠️ Nenhum dado encontrado no MongoDB para reindexar.")
+        return
+
+    for doc in documentos:
+        entrada = f"{doc.get('tipo', '')}: {doc.get('codigoOriginal', '')}"
+        embedding = gerar_embedding(entrada)
+
+        # Atualiza opcionalmente o embedding no Mongo
+        collection.update_one(
+            {"_id": doc["_id"]},
+            {"$set": {"embedding": embedding}}
+        )
+
+        index.add(np.array([embedding]))
+        codigo_id_map.append(doc["codigoOriginal"])
+
+    print(f"✅ Reindexação concluída: {len(documentos)} casos carregados.")
+
+
+
+
+@app.post("/codet5_sugerir")
+async def codet5_sugerir(req: CodeT5Request):
+    prompt = f"{req.tipo}: {req.exemplo} | corrigido: {req.correcao} | alvo: {req.alvo}"
+    print(f"🔍 Prompt para CodeT5:\n{prompt}")
+    inputs = codet5_tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = codet5_model.generate(**inputs, max_length=512)
+    texto = codet5_tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return {"sugestao": texto}
+
+
+
+@app.post("/buscar_similar")
+async def buscar_similaridade(req: SimilaridadeRequest = Body(...), raw: Request = None):
+    print("📦 RAW BODY:", await raw.body())
+
+    codigo = req.codigo
+    tipo = req.tipo
+    k = req.k
+
+    if not codigo or not tipo:
+        return JSONResponse(
+            status_code=400,
+            content={"erro": "Campos obrigatórios 'codigo' e 'tipo' não fornecidos."}
+        )
+
+    if len(codigo_id_map) == 0:
+        return {"codigoCorrigido": "Nenhuma sugestão", "similaridade": 0.0, "similares": []}
+
+    entrada = f"{tipo}: {codigo}"
+    tokens = tokenizer(entrada, return_tensors="pt", truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**tokens)
+    embedding = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+
+    D, I = index.search(np.array([embedding]), k=int(k))
+    similares = []
+    for j, i in enumerate(I[0]):
+        codigo_similar = codigo_id_map[i]
+        doc = collection.find_one({"codigoOriginal": codigo_similar})
+
+        if doc:
+            similares.append({
+                "codigoOriginal": codigo,
+                "codigoCorrigido": doc.get("codigoCorrigido"),
+                "similaridade": float(1.0 / (1.0 + D[0][j]))
+            })
+
+    if not similares:
+        return {
+            "codigoCorrigido": "Não encontrada",
+            "similaridade": 0.0,
+            "similares": []
+        }
+
+    return {
+        "tipo": tipo,
+        "codigoOriginal": codigo,
+        "similares": similares
+    }
+
+
+
+# 📥 Carregamento FAISS na inicialização
+print("Extraindo dados do MongoDB para carregar no FAISS...")
+dataset = []
+for doc in collection.find():
+    if doc.get("codigoOriginal") and doc.get("codigoCorrigido"):
+        dataset.append({
+            "input": doc["codigoOriginal"].strip(),
+            "output": doc["codigoCorrigido"].strip(),
+            "tipo": doc.get("tipo", "").strip()
+        })
+
+print(f"Total de exemplos carregados: {len(dataset)}")
+
+for exemplo in dataset:
+    entrada = f"{exemplo['tipo']}: {exemplo['input']}"
+    tokens = tokenizer(entrada, return_tensors="pt", truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**tokens)
+    embedding = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+    index.add(np.array([embedding]))
+    codigo_id_map.append(exemplo["input"])
+
+print(f"{len(codigo_id_map)} embeddings adicionados ao índice FAISS.")
+
+def gerar_embedding(texto):
+    tokens = tokenizer(texto, return_tensors="pt", truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**tokens)
+    embedding = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+    return embedding.tolist()
+

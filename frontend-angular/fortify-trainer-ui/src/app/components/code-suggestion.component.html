@@ -1,0 +1,49 @@
+<div class="suggestion-container">
+  <h2>Sugerir Correção de Código</h2>
+
+  <label for="tipo">Tipo de vulnerabilidade:</label>
+  <input id="tipo" [(ngModel)]="tipo" placeholder="Ex: SQL Injection" />
+
+  <label for="codigo">Código vulnerável:</label>
+  <textarea id="codigo" [(ngModel)]="codigo" placeholder="Cole seu código aqui..." rows="8"></textarea>
+
+  <div class="button-row">
+    <button (click)="sugerirCorrecao()">Sugerir Correção</button>
+    <button (click)="cadastrarCorrecao()">Cadastrar Correção</button>
+  </div>
+
+  <!-- ⏳ GIF de carregamento -->
+  <div *ngIf="loading" class="loading-container">
+    <img src="https://i.gifer.com/YCZH.gif" alt="Carregando..." class="loading-gif" />
+    <p>Gerando sugestão de correção...</p>
+  </div>
+
+  <!-- ⚠️ Timeout / Erro -->
+  <div *ngIf="timeoutMsg" class="erro-msg">
+    <p>{{ timeoutMsg }}</p>
+  </div>
+
+  <div *ngIf="similaridade !== null" class="simil-box">
+    <strong>🔍 Similaridade encontrada:</strong> {{ similaridade | number:'1.2-2' }}
+  </div>
+
+  <!-- ✅ Resposta com destaque de sintaxe -->
+  <div *ngIf="respostaCompleta" class="resultado-container" highlight>
+    <h4>Resposta da API:</h4>
+
+    <div class="code-block" *ngIf="respostaCompleta">
+      <pre><code class="language-java">{{ respostaCompleta }}</code></pre>
+      <button class="copy-btn" (click)="copiarCodigo()">📋 Copiar</button>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 2rem; text-align: center;">
+    <a routerLink="/listar" class="ver-apontamentos-link">🔍 Ver Apontamentos Cadastrados</a>
+  </div>
+
+  <!-- Novo link para Falsos Positivos -->
+  <div style="margin-top: 2rem; text-align: center;">
+    <a routerLink="/falsopositivo" class="ver-falsos-positivos-link">🔍 Ver Falsos Positivos</a>
+  </div>
+</div>

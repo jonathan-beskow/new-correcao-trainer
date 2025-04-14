@@ -1,0 +1,27 @@
+FROM python:3.9-slim
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    git \
+    bash \
+    build-essential \
+    libopenblas-dev \
+    libomp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 📦 Copia os arquivos do projeto (assumindo que você está buildando a partir da raiz `correcao-trainer`)
+COPY microservico-embed/requirements.txt .
+
+# 📦 Instala as dependências Python
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# 📁 Copia o restante da aplicação
+COPY microservico-embed /app
+
+# 🌐 Expõe a porta da API
+EXPOSE 8000
+
+# 🚀 Comando para iniciar a API
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
