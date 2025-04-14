@@ -89,8 +89,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = AutoModelForSeq2SeqLM.from_pretrained(
     model_name,
-    torch_dtype="auto"
+    torch_dtype=torch.float16             # ✅ Força o uso de float16
 ).to(device)
+
 
 # ================================
 # 5. Pré-processamento
@@ -125,23 +126,25 @@ os.makedirs(log_dir, exist_ok=True)
 # ================================
 # 7. Argumentos de treino
 # ================================
+# ... (todo código anterior permanece igual até o TrainingArguments)
+
 training_args = TrainingArguments(
     output_dir=output_dir,
     overwrite_output_dir=True,
-    per_device_train_batch_size=1,
-    gradient_accumulation_steps=4,
+    per_device_train_batch_size=1,         # Mantém baixo uso de memória
+    gradient_accumulation_steps=4,         # Ajuda a simular batch maior
     num_train_epochs=3,
     save_strategy="epoch",
     save_total_limit=2,
     logging_dir=log_dir,
     logging_steps=1,
     logging_first_step=True,
-    fp16=False,
+    fp16=True,                             # ✅ Ativa float16 (aproveita GPU com menos memória)
     bf16=False,
-    use_cpu=True,  # substitui no_cuda
-    dataloader_pin_memory=False,
+    dataloader_pin_memory=True,            # ✅ Ajuda no uso eficiente da memória na GPU
     report_to="none"
 )
+
 
 # ================================
 # 8. Trainer
