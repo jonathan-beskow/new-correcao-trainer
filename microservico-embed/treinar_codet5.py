@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 import torch
 import logging
 from pymongo import MongoClient
@@ -18,14 +17,12 @@ hf_logging.set_verbosity_info()
 logger = logging.getLogger("codet5-train")
 logger.setLevel(logging.INFO)
 
-# Handler para console com UTF-8
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(logging.Formatter('%(message)s'))
 console_handler.stream.reconfigure(encoding='utf-8')
 logger.addHandler(console_handler)
 
-# Handler para arquivo
 os.makedirs("logs", exist_ok=True)
 file_handler = logging.FileHandler("logs/treinamento.log", encoding="utf-8")
 file_handler.setLevel(logging.INFO)
@@ -86,12 +83,12 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.model_max_length = 4096
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+use_fp16 = torch.cuda.is_available()
 
 model = AutoModelForSeq2SeqLM.from_pretrained(
     model_name,
-    torch_dtype=torch.float16             # ✅ Força o uso de float16
+    torch_dtype=torch.float16 if use_fp16 else torch.float32
 ).to(device)
-
 
 # ================================
 # 5. Pré-processamento
@@ -99,7 +96,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(
 def preprocess(example):
     model_inputs = tokenizer(
         example["input"],
-        max_length=2048,
+        max_length=1024,  # reduzido para não estourar memória
         padding="max_length",
         truncation=True
     )
@@ -121,30 +118,25 @@ tokenized_dataset = dataset.map(preprocess, remove_columns=dataset.column_names)
 output_dir = "./codet5p-220m-finetuned"
 log_dir = "./logs"
 os.makedirs(output_dir, exist_ok=True)
-os.makedirs(log_dir, exist_ok=True)
 
 # ================================
 # 7. Argumentos de treino
 # ================================
-# ... (todo código anterior permanece igual até o TrainingArguments)
-
 training_args = TrainingArguments(
     output_dir=output_dir,
     overwrite_output_dir=True,
-    per_device_train_batch_size=1,         # Mantém baixo uso de memória
-    gradient_accumulation_steps=4,         # Ajuda a simular batch maior
+    per_device_train_batch_size=1,
+    gradient_accumulation_steps=4,
     num_train_epochs=3,
     save_strategy="epoch",
     save_total_limit=2,
     logging_dir=log_dir,
     logging_steps=1,
     logging_first_step=True,
-    fp16=True,                             # ✅ Ativa float16 (aproveita GPU com menos memória)
-    bf16=False,
-    dataloader_pin_memory=True,            # ✅ Ajuda no uso eficiente da memória na GPU
+    fp16=use_fp16,
+    dataloader_pin_memory=True,
     report_to="none"
 )
-
 
 # ================================
 # 8. Trainer
