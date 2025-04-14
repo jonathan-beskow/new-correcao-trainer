@@ -34,11 +34,19 @@ if %errorlevel% neq 0 (
     huggingface-cli login
 )
 
-:: 💡 Para forçar limpeza de modelo anterior, descomente abaixo
-:: echo Limpando cache antigo do modelo...
-:: rmdir /s /q .\codet5p-220m-finetuned
+:: Executa verificação de necessidade de treino
+echo.
+echo 🔍 Verificando se há novos dados para re-treinamento...
+python verifica_treinamento.py > nul
+if %errorlevel% neq 0 (
+    echo ✅ Nenhuma mudança detectada no banco de dados.
+    echo ℹ️  Treinamento não é necessário neste momento.
+    echo.
+    pause
+    exit /b
+)
 
-:: Executa o script Python
+:: Se chegou aqui, o treinamento será executado
 echo.
 echo 🧠 Iniciando script Python de treinamento...
 python treinar_codet5.py
