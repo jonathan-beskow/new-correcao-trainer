@@ -96,7 +96,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(
 def preprocess(example):
     model_inputs = tokenizer(
         example["input"],
-        max_length=1024,  # reduzido para não estourar memória
+        max_length=1024,
         padding="max_length",
         truncation=True
     )

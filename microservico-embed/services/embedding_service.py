@@ -4,6 +4,13 @@ import torch
 tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
 model = AutoModel.from_pretrained("microsoft/codebert-base")
 
+from pydantic import BaseModel
+
+class EmbeddingRequest(BaseModel):
+    tipo: str
+    codigo: str
+
+
 def gerar_embedding(texto: str):
     tokens = tokenizer(texto, return_tensors="pt", truncation=True, max_length=512)
     with torch.no_grad():

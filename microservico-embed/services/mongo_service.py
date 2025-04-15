@@ -50,3 +50,10 @@ def buscar_todos_blocos():
         "blocoAntes": {"$exists": True, "$ne": ""},
         "blocoDepois": {"$exists": True, "$ne": ""}
     }))
+
+
+def buscar_blocos_por_tipo(tipo: str, limite: int = 5) -> list:
+    return list(collection_blocos.find(
+        {"tipo": tipo, "blocoAntes": {"$ne": ""}, "blocoDepois": {"$ne": ""}}
+    ).limit(limite))
+

@@ -1,0 +1,74 @@
+2025-04-14 20:01:25,894 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const user = new URLSearchParams(window.location.search).get("user");...
+🟩 Depois: <script>
+  const user = new URLSearchParams(window.location.search).get("user");...
+
+2025-04-14 20:01:25,895 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const fragment = location.hash.substring(1);
+  document.write("Hash: ...
+🟩 Depois: <script>
+  const fragment = location.hash.substring(1);
+  const safe = document....
+
+2025-04-14 20:01:25,895 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const param = new URLSearchParams(location.search).get("input");
+  do...
+🟩 Depois: <script>
+  const param = new URLSearchParams(location.search).get("input");
+  do...
+
+2025-04-14 20:01:25,897 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const link = new URLSearchParams(location.search).get("url");
+  docum...
+🟩 Depois: <script>
+  const link = new URLSearchParams(location.search).get("url");
+  if (l...
+
+2025-04-14 20:01:25,898 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const value = new URLSearchParams(location.search).get("val");
+  docu...
+🟩 Depois: <script>
+  const value = new URLSearchParams(location.search).get("val");
+  cons...
+
+2025-04-14 20:01:25,898 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const q = new URLSearchParams(window.location.search).get("q");
+  doc...
+🟩 Depois: <script>
+  const q = new URLSearchParams(window.location.search).get("q");
+  doc...
+
+2025-04-14 20:01:25,899 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const ref = window.location.hash.substr(1);
+  location.href = ref;
+</...
+🟩 Depois: <script>
+  const ref = window.location.hash.substr(1);
+  if (ref.startsWith("htt...
+
+2025-04-14 20:01:25,899 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const query = window.location.search.split("=")[1];
+  document.getEle...
+🟩 Depois: <script>
+  const query = window.location.search.split("=")[1];
+  document.getEle...
+
+2025-04-14 20:01:25,900 - INFO - ✅ Bloco válido:
+🟥 Antes: <script>
+  const userInput = location.hash.substring(1);
+  document.getElementBy...
+🟩 Depois: <script>
+  const userInput = location.hash.substring(1);
+  document.getElementBy...
+
+2025-04-14 20:01:25,900 - INFO - 📊 Total de blocos com tipo 'cross-site scripting: dom': 9
+2025-04-14 20:01:25,901 - INFO - ✔️ Blocos válidos com entrada e saída: 9
+2025-04-14 20:01:25,901 - INFO - ❌ Blocos incompletos ou inválidos: 0
