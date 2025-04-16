@@ -42,6 +42,7 @@ async def startup_event():
         model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
         tokenizer = AutoTokenizer.from_pretrained(model_dir)
 
+
         # Índice FAISS para embeddings + mapeamento dos códigos adicionados
         index = faiss.IndexFlatL2(768)  # confere se o tamanho 768 está correto para seu modelo
         codigo_id_map = []
