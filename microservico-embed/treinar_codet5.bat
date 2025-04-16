@@ -36,15 +36,15 @@ if %errorlevel% neq 0 (
 
 :: Executa verificação de necessidade de treino
 echo.
-echo 🔍 Verificando se há novos dados para re-treinamento...
-python verifica_treinamento.py > nul
-if %errorlevel% neq 0 (
-    echo ✅ Nenhuma mudança detectada no banco de dados.
-    echo ℹ️  Treinamento não é necessário neste momento.
-    echo.
-    pause
-    exit /b
-)
+::echo 🔍 Verificando se há novos dados para re-treinamento...
+::python verifica_treinamento.py > nul
+::if %errorlevel% neq 0 (
+::    echo ✅ Nenhuma mudança detectada no banco de dados.
+::    echo ℹ️  Treinamento não é necessário neste momento.
+::    echo.
+::    pause
+::    exit /b
+::)
 
 :: Se chegou aqui, o treinamento será executado
 echo.

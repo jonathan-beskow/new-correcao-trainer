@@ -8,6 +8,7 @@ from transformers import (
     AutoTokenizer, AutoModelForSeq2SeqLM,
     Trainer, TrainingArguments
 )
+from difflib import SequenceMatcher
 from transformers.utils import logging as hf_logging
 
 # ================================
@@ -39,11 +40,20 @@ collection = db["casosCorrigidos"]
 collection_blocos = db["casosCorrigidosBlocos"]
 
 # ================================
-# 2. Carregar exemplos
+# 2. Carregar e refinar exemplos
 # ================================
-logger.info("🔍 Extraindo exemplos do MongoDB...")
+logger.info("🔍 Extraindo e refinando exemplos do MongoDB...")
 dados = []
 
+def extrair_diferencas(origem: str, destino: str) -> str:
+    matcher = SequenceMatcher(None, origem.splitlines(), destino.splitlines())
+    linhas_modificadas = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag != 'equal':
+            linhas_modificadas.extend(destino.splitlines()[j1:j2])
+    return '\n'.join(linhas_modificadas).strip()
+
+# Casos completos
 for doc in collection.find():
     entrada = doc.get("codigoOriginal", "").strip()
     saida = doc.get("codigoCorrigido", "").strip()
@@ -54,17 +64,19 @@ for doc in collection.find():
             "output": saida
         })
 
+# Blocos refinados
 for bloco in collection_blocos.find():
     entrada = bloco.get("blocoAntes", "").strip()
     saida = bloco.get("blocoDepois", "").strip()
     tipo = bloco.get("tipo", "").strip()
     if entrada and saida:
+        refinado = extrair_diferencas(entrada, saida)
         dados.append({
             "input": f"Corrija este bloco vulnerável do tipo {tipo}:\n{entrada}",
-            "output": saida
+            "output": refinado if refinado else saida
         })
 
-logger.info(f"✅ Total de exemplos coletados: {len(dados)}")
+logger.info(f"✅ Total de exemplos coletados e refinados: {len(dados)}")
 if not dados:
     logger.warning("⚠️ Nenhum exemplo encontrado. Encerrando.")
     exit(0)
