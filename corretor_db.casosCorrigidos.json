@@ -18813,4 +18813,460 @@
     -0.38176143169403076,
     0.6119709610939026
   ]
+},
+{
+  "_id": {
+    "$oid": "67fd7a1e3abdaa7e50a6ecb7"
+  },
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "codigoOriginal": "<!-- index.html -->\n<input type=\"text\" id=\"userInput\" placeholder=\"Digite seu nome\" />\n<button onclick=\"greetUser()\">Enviar</button>\n<div id=\"output\"></div>\n\n<script>\n  function greetUser() {\n    const name = location.hash.substring(1); // exemplo: #<script>alert(1)</script>\n    document.getElementById(\"output\").innerHTML = \"Olá, \" + name;\n  }\n\n  window.onload = greetUser;\n</script>\n",
+  "codigoCorrigido": "<!-- index.html -->\n<input type=\"text\" id=\"userInput\" placeholder=\"Digite seu nome\" />\n<button onclick=\"greetUser()\">Enviar</button>\n<div id=\"output\"></div>\n\n<script>\n  function sanitize(input) {\n    const temp = document.createElement(\"div\");\n    temp.textContent = input; // trata como texto puro\n    return temp.innerHTML;\n  }\n\n  function greetUser() {\n    const name = location.hash.substring(1);\n    const safeName = sanitize(name);\n    document.getElementById(\"output\").innerHTML = \"Olá, \" + safeName;\n  }\n\n  window.onload = greetUser;\n</script>\n",
+  "justificativa": "Cadastro manual do usuário.",
+  "criadoEm": {
+    "$date": "2025-04-14T21:11:37.693Z"
+  },
+  "_class": "com.example.demo.model.CasoCorrigido"
+},
+{
+  "_id": {
+    "$oid": "67fd7a1e3abdaa7e50a6ecb8"
+  },
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "codigoOriginal": "<!-- index.html -->\n<input type=\"text\" id=\"userInput\" placeholder=\"Digite seu nome\" />\n<button onclick=\"greetUser()\">Enviar</button>\n<div id=\"output\"></div>\n\n<script>\n  function greetUser() {\n    const name = location.hash.substring(1); // exemplo: #<script>alert(1)</script>\n    document.getElementById(\"output\").innerHTML = \"Olá, \" + name;\n  }\n\n  window.onload = greetUser;\n</script>\n",
+  "codigoCorrigido": "<!-- index.html -->\n<input type=\"text\" id=\"userInput\" placeholder=\"Digite seu nome\" />\n<button onclick=\"greetUser()\">Enviar</button>\n<div id=\"output\"></div>\n\n<script>\n  function sanitize(input) {\n    const temp = document.createElement(\"div\");\n    temp.textContent = input; // trata como texto puro\n    return temp.innerHTML;\n  }\n\n  function greetUser() {\n    const name = location.hash.substring(1);\n    const safeName = sanitize(name);\n    document.getElementById(\"output\").innerHTML = \"Olá, \" + safeName;\n  }\n\n  window.onload = greetUser;\n</script>\n",
+  "justificativa": "Cadastro manual do usuário.",
+  "criadoEm": {
+    "$date": "2025-04-14T21:11:30.188Z"
+  },
+  "_class": "com.example.demo.model.CasoCorrigido"
+},
+{
+  "_id": {
+    "$oid": "67fd7a853abdaa7e50a6ecb9"
+  },
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "codigoOriginal": "<!-- profile.html -->\n<h2 id=\"greeting\"></h2>\n\n<script>\n  const params = new URLSearchParams(window.location.search);\n  const name = params.get(\"name\"); // ?name=<script>alert(1)</script>\n\n  document.getElementById(\"greeting\").innerHTML = \"Bem-vindo, \" + name;\n</script>\n",
+  "codigoCorrigido": "<!-- profile.html -->\n<h2 id=\"greeting\"></h2>\n\n<script>\n  const params = new URLSearchParams(window.location.search);\n  const name = params.get(\"name\");\n\n  document.getElementById(\"greeting\").textContent = \"Bem-vindo, \" + name;\n</script>\n",
+  "justificativa": "Cadastro manual do usuário.",
+  "criadoEm": {
+    "$date": "2025-04-14T21:13:41.367Z"
+  },
+  "_class": "com.example.demo.model.CasoCorrigido"
+},
+{
+  "_id": {
+    "$oid": "67fd7aef3abdaa7e50a6ecba"
+  },
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "codigoOriginal": "<script>\n  const user = location.search.split(\"=\")[1];\n  document.write(\"Usuário: \" + user);\n</script>\n",
+  "codigoCorrigido": "<script>\n  const user = location.search.split(\"=\")[1];\n  const safeUser = document.createTextNode(\"Usuário: \" + user);\n  document.body.appendChild(safeUser);\n</script>\n",
+  "justificativa": "Cadastro manual do usuário.",
+  "criadoEm": {
+    "$date": "2025-04-14T21:15:27.305Z"
+  },
+  "_class": "com.example.demo.model.CasoCorrigido"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f200"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").innerHTML = user;\n</script>",
+  "codigoCorrigido": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").textContent = user;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f201"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const fragment = location.hash.substring(1);\n  document.write(\"Hash: \" + fragment);\n</script>",
+  "codigoCorrigido": "<script>\n  const fragment = location.hash.substring(1);\n  const safe = document.createTextNode(\"Hash: \" + fragment);\n  document.body.appendChild(safe);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f202"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f203"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f204"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f205"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").innerHTML = user;\n</script>",
+  "codigoCorrigido": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").textContent = user;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f206"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").innerHTML = user;\n</script>",
+  "codigoCorrigido": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").textContent = user;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f207"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f208"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f209"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f20a"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f20b"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const fragment = location.hash.substring(1);\n  document.write(\"Hash: \" + fragment);\n</script>",
+  "codigoCorrigido": "<script>\n  const fragment = location.hash.substring(1);\n  const safe = document.createTextNode(\"Hash: \" + fragment);\n  document.body.appendChild(safe);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f20c"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f20d"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f20e"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f20f"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").innerHTML = user;\n</script>",
+  "codigoCorrigido": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").textContent = user;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f210"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f211"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "codigoCorrigido": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f212"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7c5818d00536f052f213"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const fragment = location.hash.substring(1);\n  document.write(\"Hash: \" + fragment);\n</script>",
+  "codigoCorrigido": "<script>\n  const fragment = location.hash.substring(1);\n  const safe = document.createTextNode(\"Hash: \" + fragment);\n  document.body.appendChild(safe);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f214"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const fragment = location.hash.substring(1);\n  document.write(\"Hash: \" + fragment);\n</script>",
+  "codigoCorrigido": "<script>\n  const fragment = location.hash.substring(1);\n  const safe = document.createTextNode(\"Hash: \" + fragment);\n  document.body.appendChild(safe);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f215"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const value = new URLSearchParams(location.search).get(\"val\");\n  document.body.innerHTML += \"<div>\" + value + \"</div>\";\n</script>",
+  "codigoCorrigido": "<script>\n  const value = new URLSearchParams(location.search).get(\"val\");\n  const div = document.createElement(\"div\");\n  div.textContent = value;\n  document.body.appendChild(div);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f216"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q;\n</script>",
+  "codigoCorrigido": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q.replace(/[<>]/g, \"\");\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f217"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f218"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const ref = window.location.hash.substr(1);\n  location.href = ref;\n</script>",
+  "codigoCorrigido": "<script>\n  const ref = window.location.hash.substr(1);\n  if (ref.startsWith(\"https://meusite.com/\")) {\n    location.href = ref;\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f219"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f21a"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const query = window.location.search.split(\"=\")[1];\n  document.getElementById(\"output\").innerHTML = decodeURIComponent(query);\n</script>",
+  "codigoCorrigido": "<script>\n  const query = window.location.search.split(\"=\")[1];\n  document.getElementById(\"output\").textContent = decodeURIComponent(query);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f21b"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q;\n</script>",
+  "codigoCorrigido": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q.replace(/[<>]/g, \"\");\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f21c"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").innerHTML = userInput;\n</script>",
+  "codigoCorrigido": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").textContent = userInput;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f21d"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q;\n</script>",
+  "codigoCorrigido": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q.replace(/[<>]/g, \"\");\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f21e"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const fragment = location.hash.substring(1);\n  document.write(\"Hash: \" + fragment);\n</script>",
+  "codigoCorrigido": "<script>\n  const fragment = location.hash.substring(1);\n  const safe = document.createTextNode(\"Hash: \" + fragment);\n  document.body.appendChild(safe);\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f21f"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").innerHTML = userInput;\n</script>",
+  "codigoCorrigido": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").textContent = userInput;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f220"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const ref = window.location.hash.substr(1);\n  location.href = ref;\n</script>",
+  "codigoCorrigido": "<script>\n  const ref = window.location.hash.substr(1);\n  if (ref.startsWith(\"https://meusite.com/\")) {\n    location.href = ref;\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f221"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const ref = window.location.hash.substr(1);\n  location.href = ref;\n</script>",
+  "codigoCorrigido": "<script>\n  const ref = window.location.hash.substr(1);\n  if (ref.startsWith(\"https://meusite.com/\")) {\n    location.href = ref;\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f222"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q;\n</script>",
+  "codigoCorrigido": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q.replace(/[<>]/g, \"\");\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f223"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").innerHTML = user;\n</script>",
+  "codigoCorrigido": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").textContent = user;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f224"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "codigoCorrigido": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f225"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q;\n</script>",
+  "codigoCorrigido": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q.replace(/[<>]/g, \"\");\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f226"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").innerHTML = userInput;\n</script>",
+  "codigoCorrigido": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").textContent = userInput;\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd7cba18d00536f052f227"
+  },
+  "tipo": "cross-site scripting: dom",
+  "codigoOriginal": "<script>\n  const ref = window.location.hash.substr(1);\n  location.href = ref;\n</script>",
+  "codigoCorrigido": "<script>\n  const ref = window.location.hash.substr(1);\n  if (ref.startsWith(\"https://meusite.com/\")) {\n    location.href = ref;\n  }\n</script>"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15cc"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "document.getElementById(\"msg\").innerHTML = location.hash;",
+  "blocoDepois": "document.getElementById(\"msg\").textContent = location.hash;"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15cd"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "document.write(\"Usuário: \" + nome);",
+  "blocoDepois": "document.body.appendChild(document.createTextNode(\"Usuário: \" + nome));"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15ce"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "const search = location.search.split('=')[1]; document.getElementById(\"out\").innerHTML = search;",
+  "blocoDepois": "const search = location.search.split('=')[1]; document.getElementById(\"out\").textContent = search;"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15cf"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "const input = new URLSearchParams(location.search).get(\"q\"); document.getElementById(\"result\").innerHTML = input;",
+  "blocoDepois": "const input = new URLSearchParams(location.search).get(\"q\"); document.getElementById(\"result\").textContent = input;"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15d0"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "document.location = \"/search?q=\" + document.getElementById(\"term\").value;",
+  "blocoDepois": "const safe = encodeURIComponent(document.getElementById(\"term\").value); document.location = \"/search?q=\" + safe;"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15d1"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "eval(\"alert('Olá ' + nome)\");",
+  "blocoDepois": "const safeNome = nome.replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\"); alert('Olá ' + safeNome);"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15d2"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "const frag = location.hash; document.write(frag);",
+  "blocoDepois": "const frag = location.hash; document.body.appendChild(document.createTextNode(frag));"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15d3"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "document.getElementById(\"x\").innerHTML = `<b>${valor}</b>`;",
+  "blocoDepois": "document.getElementById(\"x\").textContent = valor;"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15d4"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "const path = window.location.pathname; document.getElementById(\"path\").innerHTML = path;",
+  "blocoDepois": "const path = window.location.pathname; document.getElementById(\"path\").textContent = path;"
+},
+{
+  "_id": {
+    "$oid": "67fd9fa3d727da79562c15d5"
+  },
+  "tipo": "cross-site scripting: dom",
+  "blocoAntes": "const name = window.prompt(\"Nome?\"); document.write(\"Bem-vindo \" + name);",
+  "blocoDepois": "const name = window.prompt(\"Nome?\"); document.body.appendChild(document.createTextNode(\"Bem-vindo \" + name));"
 }]

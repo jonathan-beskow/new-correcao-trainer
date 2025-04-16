@@ -357,4 +357,184 @@
   "criadoEm": {
     "$date": "2025-04-10T11:37:14.603Z"
   }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134bf"
+  },
+  "origemId": "67fd7a1e3abdaa7e50a6ecb7",
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<!-- index.html -->\n<input type=\"text\" id=\"userInput\" placeholder=\"Digite seu nome\" />\n<button onclick=\"greetUser()\">Enviar</button>\n<div id=\"output\"></div>\n\n<script>\n  function greetUser() {\n    const name = location.hash.substring(1); // exemplo: #<script>alert(1)</script>\n    document.getElementById(\"output\").innerHTML = \"Olá, \" + name;\n  }\n\n  window.onload = greetUser;\n</script>",
+  "blocoDepois": "<!-- index.html -->\n<input type=\"text\" id=\"userInput\" placeholder=\"Digite seu nome\" />\n<button onclick=\"greetUser()\">Enviar</button>\n<div id=\"output\"></div>\n\n<script>\n  function sanitize(input) {\n    const temp = document.createElement(\"div\");\n    temp.textContent = input; // trata como texto puro\n    return temp.innerHTML;\n  }\n\n  function greetUser() {\n    const name = location.hash.substring(1);\n    const safeName = sanitize(name);\n    document.getElementById(\"output\").innerHTML = \"Olá, \" + safeName;\n  }\n\n  window.onload = greetUser;\n</script>",
+  "hash": "456ee3467b8230bd035ffef7ede1bdee",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.979Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134c0"
+  },
+  "origemId": "67fd7a853abdaa7e50a6ecb9",
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<!-- profile.html -->\n<h2 id=\"greeting\"></h2>\n\n<script>\n  const params = new URLSearchParams(window.location.search);\n  const name = params.get(\"name\"); // ?name=<script>alert(1)</script>\n\n  document.getElementById(\"greeting\").innerHTML = \"Bem-vindo, \" + name;\n</script>",
+  "blocoDepois": "<!-- profile.html -->\n<h2 id=\"greeting\"></h2>\n\n<script>\n  const params = new URLSearchParams(window.location.search);\n  const name = params.get(\"name\");\n\n  document.getElementById(\"greeting\").textContent = \"Bem-vindo, \" + name;\n</script>",
+  "hash": "181e555726f1572658f895eb3f39cc5d",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.986Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134c1"
+  },
+  "origemId": "67fd7aef3abdaa7e50a6ecba",
+  "tipo": "Cross-site scripting: dom",
+  "linguagem": "Java",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const user = location.search.split(\"=\")[1];\n  document.write(\"Usuário: \" + user);\n</script>",
+  "blocoDepois": "<script>\n  const user = location.search.split(\"=\")[1];\n  const safeUser = document.createTextNode(\"Usuário: \" + user);\n  document.body.appendChild(safeUser);\n</script>",
+  "hash": "6aca4d8b94e9f55ab2d9c285890f3342",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.988Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134c2"
+  },
+  "origemId": "67fd7c5818d00536f052f200",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").innerHTML = user;\n</script>",
+  "blocoDepois": "<script>\n  const user = new URLSearchParams(window.location.search).get(\"user\");\n  document.getElementById(\"userDisplay\").textContent = user;\n</script>",
+  "hash": "372197bd7f66dc1af425ff05ed43614f",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.991Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134c3"
+  },
+  "origemId": "67fd7c5818d00536f052f201",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const fragment = location.hash.substring(1);\n  document.write(\"Hash: \" + fragment);\n</script>",
+  "blocoDepois": "<script>\n  const fragment = location.hash.substring(1);\n  const safe = document.createTextNode(\"Hash: \" + fragment);\n  document.body.appendChild(safe);\n</script>",
+  "hash": "dc5f5ec7a482a749d8d5a0a5c70dc2c7",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.993Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134c4"
+  },
+  "origemId": "67fd7c5818d00536f052f202",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").innerHTML = \"Valor: \" + param;\n</script>",
+  "blocoDepois": "<script>\n  const param = new URLSearchParams(location.search).get(\"input\");\n  document.getElementById(\"output\").textContent = \"Valor: \" + param;\n</script>",
+  "hash": "00cb9f311d79c40204af537a6c7f7aa5",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.995Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91606be13e591dc134c5"
+  },
+  "origemId": "67fd7c5818d00536f052f204",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  document.getElementById(\"myLink\").setAttribute(\"href\", link);\n</script>",
+  "blocoDepois": "<script>\n  const link = new URLSearchParams(location.search).get(\"url\");\n  if (link && link.startsWith(\"https://example.com/\")) {\n    document.getElementById(\"myLink\").setAttribute(\"href\", link);\n  }\n</script>",
+  "hash": "d40c095c8f333ad82b84b64745be094b",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:12.999Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91616be13e591dc134c6"
+  },
+  "origemId": "67fd7cba18d00536f052f215",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const value = new URLSearchParams(location.search).get(\"val\");\n  document.body.innerHTML += \"<div>\" + value + \"</div>\";\n</script>",
+  "blocoDepois": "<script>\n  const value = new URLSearchParams(location.search).get(\"val\");\n  const div = document.createElement(\"div\");\n  div.textContent = value;\n  document.body.appendChild(div);\n</script>",
+  "hash": "b26e085a01b05347d8af8971ce7e50d0",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:13.033Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91616be13e591dc134c7"
+  },
+  "origemId": "67fd7cba18d00536f052f216",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q;\n</script>",
+  "blocoDepois": "<script>\n  const q = new URLSearchParams(window.location.search).get(\"q\");\n  document.title = q.replace(/[<>]/g, \"\");\n</script>",
+  "hash": "2df8a688f5f0ca55aec3f6e7a38875a7",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:13.036Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91616be13e591dc134c8"
+  },
+  "origemId": "67fd7cba18d00536f052f218",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const ref = window.location.hash.substr(1);\n  location.href = ref;\n</script>",
+  "blocoDepois": "<script>\n  const ref = window.location.hash.substr(1);\n  if (ref.startsWith(\"https://meusite.com/\")) {\n    location.href = ref;\n  }\n</script>",
+  "hash": "a8d43f545fa6f073408f671f373696bf",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:13.043Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91616be13e591dc134c9"
+  },
+  "origemId": "67fd7cba18d00536f052f21a",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const query = window.location.search.split(\"=\")[1];\n  document.getElementById(\"output\").innerHTML = decodeURIComponent(query);\n</script>",
+  "blocoDepois": "<script>\n  const query = window.location.search.split(\"=\")[1];\n  document.getElementById(\"output\").textContent = decodeURIComponent(query);\n</script>",
+  "hash": "d0716fe88b7cc0c89c0f3153bdbab0ab",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:13.049Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fd91616be13e591dc134ca"
+  },
+  "origemId": "67fd7cba18d00536f052f21c",
+  "tipo": "cross-site scripting: dom",
+  "linguagem": "plain",
+  "nomeMetodo": "bloco_1",
+  "blocoAntes": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").innerHTML = userInput;\n</script>",
+  "blocoDepois": "<script>\n  const userInput = location.hash.substring(1);\n  document.getElementById(\"message\").textContent = userInput;\n</script>",
+  "hash": "516ce3d041312bed803b767e0218b8b7",
+  "criadoEm": {
+    "$date": "2025-04-14T22:51:13.060Z"
+  }
 }]
