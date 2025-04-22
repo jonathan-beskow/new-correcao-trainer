@@ -2,11 +2,11 @@ package com.example.demo.service.saveService;
 
 import com.example.demo.model.CasoCorrigido;
 import com.example.demo.repository.CasoCorrigidoRepository;
-import com.example.demo.service.SimilaridadeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -20,15 +20,39 @@ import java.util.Map;
 @Service
 public class InserirCasoCorrigidoService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimilaridadeService.class);
+    private static final Logger logger = LoggerFactory.getLogger(InserirCasoCorrigidoService.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final String URL_PYTHON = "http://localhost:8000";
 
     @Autowired
     private CasoCorrigidoRepository casoCorrigidoRepository;
 
+    public ResponseEntity<Map<String, String>> inserir(CasoCorrigido caso) {
+        Map<String, String> resposta = new HashMap<>();
 
-    public boolean inserirCasoCorrigido(CasoCorrigido caso) {
+        if (caso.getTipo() == null || caso.getTipo().trim().isEmpty()) {
+            resposta.put("mensagem", "O campo 'tipo' é obrigatório.");
+            return ResponseEntity.badRequest().body(resposta);
+        }
+
+        String tipoNormalizado = Character.toUpperCase(caso.getTipo().charAt(0)) + caso.getTipo().substring(1).toLowerCase();
+        caso.setTipo(tipoNormalizado);
+
+        boolean sucesso = inserirCasoCorrigido(caso);
+
+        if (sucesso) {
+            logger.info("Novo caso corrigido cadastrado com sucesso:\n{}", caso.getCodigoCorrigido());
+            resposta.put("mensagem", "Caso inserido com sucesso.");
+            return ResponseEntity.ok(resposta);
+        } else {
+            logger.error("Erro ao tentar cadastrar o caso.");
+            resposta.put("mensagem", "Erro ao inserir caso.");
+            return ResponseEntity.status(500).body(resposta);
+        }
+    }
+
+    // 🛠️ Adiciona esse método privado ausente
+    private boolean inserirCasoCorrigido(CasoCorrigido caso) {
         try {
             Map<String, String> json = new HashMap<>();
             json.put("codigoOriginal", caso.getCodigoOriginal());
@@ -55,5 +79,4 @@ public class InserirCasoCorrigidoService {
             return false;
         }
     }
-
 }

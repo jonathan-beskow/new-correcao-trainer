@@ -146,17 +146,27 @@ public class CodeCorrectionService {
     ) {
         String resposta = sugerirCorrecaoViaPython(tipo, exemplo, correcao, alvo, origemId, bloco);
 
-        // Checagem: resposta inválida
-        if (resposta == null || resposta.isBlank() || resposta.trim().equals(":")) {
-            logger.warn("⚠️ Sugestão do CodeT5 foi vazia ou inválida. Redirecionando para GPT...");
+        // Respostas muito curtas são provavelmente inválidas
+        boolean deveUsarFallback = resposta == null || resposta.isBlank() || resposta.trim().length() < 5 || resposta.toLowerCase().contains("erro");
 
-            // Chama fallback com GPT (você já implementou algo semelhante anteriormente)
+        if (deveUsarFallback) {
+            logger.warn("⚠️ Sugestão do CodeT5 inválida. Ativando fallback com GPT...");
+
             resposta = gerarCorrecaoViaChatGPT(tipo, exemplo, correcao, alvo);
-            logger.info("✅ Sugestão refinada com GPT.");
+
+            if (resposta == null || resposta.isBlank()) {
+                logger.error("❌ GPT também não retornou uma resposta válida.");
+                return "Erro: nenhuma sugestão de correção foi gerada.";
+            }
+
+            logger.info("✅ Sugestão gerada com sucesso via GPT.");
+        } else {
+            logger.info("✅ Sugestão válida recebida do modelo CodeT5.");
         }
 
         return resposta;
     }
+
 
 
     public static String extrairCodigosMarkdown(String texto) {
