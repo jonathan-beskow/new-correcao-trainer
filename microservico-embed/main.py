@@ -26,15 +26,16 @@ app = FastAPI(title="Microserviço de Correção com IA")
 @app.on_event("startup")
 async def startup_event():
     logger.info("🔄 Reindexando todos os casos corrigidos ao iniciar a API...")
-    reindexar_todos()
-    processar_embeddings()
     logger.info("🧠 Reindexando todos os blocos de código corrigidos...")
+    reindexar_todos()
     reindexar_blocos()
+    processar_embeddings()
+    
 
-    logger.info("🔍 Processando blocos de código para treinamento e correção...")
-    splitter = BlocoSplitterService()
-    splitter.processar_todos()
-    splitter.processar_novos()
+    # logger.info("🔍 Processando blocos de código para treinamento e correção...")
+    # splitter = BlocoSplitterService()
+    # splitter.processar_todos()
+    # splitter.processar_novos()
 
     # Carregando modelo e tokenizer CodeT5
     try:
