@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body
 from models.schemas import CodeT5Request
-from services.codet5_service import sugerir_codet5
+from services.codet5_service.model_handler import model, tokenizer, device, MAX_TOKENS
+from services.codet5_service.suggestion_service import sugerir_codet5
 from services.mongo_service import buscar_blocos_por_origem_id
 from bson import ObjectId
 

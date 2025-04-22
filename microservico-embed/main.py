@@ -55,11 +55,11 @@ async def startup_event():
 
         max_tokens = getattr(model.config, "n_positions", None)
         if max_tokens:
-            logger.info(f"✅ Modelo carregado com sucesso. Token máximo suportado: {max_tokens}")
+            logger.info(f"Modelo carregado com sucesso. Token máximo suportado: {max_tokens}")
         else:
-            logger.warning("⚠️ Não foi possível determinar o número máximo de tokens do modelo.")
+            logger.warning("Não foi possível determinar o número máximo de tokens do modelo.")
     except Exception as e:
-        logger.error("❌ Erro ao carregar o modelo/tokenizer:")
+        logger.error("Erro ao carregar o modelo/tokenizer:")
         logger.exception(e)
 
 # 🔌 Endpoint para verificar se a API está no ar

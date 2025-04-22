@@ -10,24 +10,41 @@ collection_blocos = db["casosCorrigidosBlocos"]
 
 # Função para verificar e criar embeddings para documentos
 def adicionar_embeddings_para_documentos():
-    documentos = buscar_todos_documentos()
-    if not documentos:
-        print("⚠️ Nenhum dado encontrado para adicionar embeddings.")
-        return
+    print("🔍 Buscando documentos sem embeddings...")
 
-    for doc in documentos:
-        # Verifica se 'codigoOriginal' existe e não está vazio
-        if "codigoOriginal" in doc and doc["codigoOriginal"]:
-            entrada = f"{doc.get('tipo', '')}: {doc['codigoOriginal']}"
+    documentos_sem_embedding = list(collection.find({
+        "$or": [
+            {"embedding": {"$exists": False}},
+            {"embedding": {"$size": 0}},
+            {"embedding": None}
+        ],
+        "codigoOriginal": {"$exists": True, "$ne": ""},
+        "codigoCorrigido": {"$exists": True, "$ne": ""},
+        "tipo": {"$exists": True, "$ne": ""}
+    }))
+
+    print(f"📄 Total de documentos a processar: {len(documentos_sem_embedding)}")
+
+    for doc in documentos_sem_embedding:
+        try:
+            entrada = f"{doc.get('tipo', '')}: {doc.get('codigoOriginal', '')}"
             embedding = gerar_embedding(entrada)
-            
-            if embedding is not None:
+
+            if embedding:
+                # Salva no MongoDB
+                collection.update_one(
+                    {"_id": doc["_id"]},
+                    {"$set": {"embedding": embedding}}
+                )
+                # Adiciona no índice FAISS
                 adicionar_embedding(embedding, doc["codigoOriginal"])
-                print(f"✅ Embedding adicionado para o código: {doc['codigoOriginal']}")
+                print(f"✅ Embedding salvo para ID {doc['_id']}")
             else:
-                print(f"⚠️ Falha ao gerar embedding para o código: {doc['codigoOriginal']}")
-        else:
-            print(f"⚠️ Documento {doc['_id']} não possui o campo 'codigoOriginal'. Ignorando.")
+                print(f"⚠️ Embedding nulo para ID {doc['_id']}")
+
+        except Exception as e:
+            print(f"❌ Erro ao processar documento {doc['_id']}: {e}")
+
 
 
 def buscar_todos_documentos():
@@ -39,26 +56,37 @@ def buscar_todos_documentos():
 
 # Função para verificar e criar embeddings para blocos
 def adicionar_embeddings_para_blocos():
-    print("🔁 Verificando e criando embeddings para os blocos...")
+    print("🔁 Buscando blocos sem embeddings...")
 
-    blocos = collection_blocos.find({"embedding": {"$exists": False}})  # Verifica blocos sem embedding
-    total_adicionados = 0
+    blocos_sem_embedding = list(collection_blocos.find({
+        "$or": [
+            {"embedding": {"$exists": False}},
+            {"embedding": {"$size": 0}},
+            {"embedding": None}
+        ],
+        "blocoAntes": {"$exists": True, "$ne": ""},
+        "blocoDepois": {"$exists": True, "$ne": ""}
+    }))
 
-    for bloco in blocos:
-        entrada = bloco["blocoAntes"]
-        embedding = gerar_embedding(entrada)
-        
-        # Adiciona o embedding no FAISS
-        adicionar_bloco_embedding(embedding, str(bloco["_id"]))
+    print(f"📄 Blocos a processar: {len(blocos_sem_embedding)}")
 
-        # Atualiza o banco de dados com o novo campo de embedding
-        collection_blocos.update_one(
-            {"_id": bloco["_id"]},
-            {"$set": {"embedding": embedding}}
-        )
-        total_adicionados += 1
+    for bloco in blocos_sem_embedding:
+        try:
+            entrada = bloco["blocoAntes"]
+            embedding = gerar_embedding(entrada)
 
-    print(f"✅ Embeddings adicionados para {total_adicionados} blocos.")
+            if embedding:
+                collection_blocos.update_one(
+                    {"_id": bloco["_id"]},
+                    {"$set": {"embedding": embedding}}
+                )
+                adicionar_bloco_embedding(embedding, str(bloco["_id"]))
+                print(f"✅ Embedding salvo para bloco {bloco['_id']}")
+            else:
+                print(f"⚠️ Embedding vazio para bloco {bloco['_id']}")
+        except Exception as e:
+            print(f"❌ Erro ao processar bloco {bloco['_id']}: {e}")
+
 
 # Função principal que chama as verificações e a criação de embeddings
 def processar_embeddings():
