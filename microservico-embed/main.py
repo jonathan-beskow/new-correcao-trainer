@@ -4,7 +4,7 @@ from routes.similaridade_routes import router as similaridade_router
 from services.reindex_service import reindexar_todos, reindexar_blocos
 from services.bloco_splitter_service import BlocoSplitterService
 from services.embedding_service import EmbeddingRequest
-
+from services.processar_embeddings import processar_embeddings
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import torch
 import numpy as np
@@ -27,7 +27,7 @@ app = FastAPI(title="Microserviço de Correção com IA")
 async def startup_event():
     logger.info("🔄 Reindexando todos os casos corrigidos ao iniciar a API...")
     reindexar_todos()
-
+    processar_embeddings()
     logger.info("🧠 Reindexando todos os blocos de código corrigidos...")
     reindexar_blocos()
 

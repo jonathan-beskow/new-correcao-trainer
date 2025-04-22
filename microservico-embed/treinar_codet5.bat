@@ -3,7 +3,7 @@ chcp 65001 > nul
 title 🚀 Treinar modelo CodeT5p-220m - Fine Tuning
 
 echo ========================================
-echo  Iniciando treinamento do modelo CodeT5p-220m
+echo  INICIANDO PREPARAÇÃO E TREINAMENTO DO MODELO
 echo ========================================
 echo.
 
@@ -34,24 +34,26 @@ if %errorlevel% neq 0 (
     huggingface-cli login
 )
 
-:: Executa verificação de necessidade de treino
+:: ===============================
+:: 1️⃣ Preparar dataset
+:: ===============================
 echo.
-::echo 🔍 Verificando se há novos dados para re-treinamento...
-::python verifica_treinamento.py > nul
-::if %errorlevel% neq 0 (
-::    echo ✅ Nenhuma mudança detectada no banco de dados.
-::    echo ℹ️  Treinamento não é necessário neste momento.
-::    echo.
-::    pause
-::    exit /b
-::)
+echo 📦 Executando preparação de dataset...
+python preparar_dataset.py
 
-:: Se chegou aqui, o treinamento será executado
+if %errorlevel% neq 0 (
+    echo ❌ Erro ao preparar o dataset. Abortando.
+    pause
+    exit /b
+)
+
+:: ===============================
+:: 2️⃣ Treinar o modelo
+:: ===============================
 echo.
 echo 🧠 Iniciando script Python de treinamento...
 python treinar_codet5.py
 
-:: Verifica retorno
 if %errorlevel% neq 0 (
     echo.
     echo ❌ Erro durante o treinamento!

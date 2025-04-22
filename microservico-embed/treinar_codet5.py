@@ -1,14 +1,13 @@
 import os
 import sys
+import json
 import torch
 import logging
-from pymongo import MongoClient
 from datasets import Dataset
 from transformers import (
     AutoTokenizer, AutoModelForSeq2SeqLM,
     Trainer, TrainingArguments
 )
-from difflib import SequenceMatcher
 from transformers.utils import logging as hf_logging
 
 # ================================
@@ -31,63 +30,26 @@ file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(mes
 logger.addHandler(file_handler)
 
 # ================================
-# 1. Conectar ao MongoDB
+# 1. Carregar datasets prontos
 # ================================
-logger.info("🌐 Conectando ao MongoDB...")
-client = MongoClient("mongodb://localhost:27017/")
-db = client["corretor_db"]
-collection = db["casosCorrigidos"]
-collection_blocos = db["casosCorrigidosBlocos"]
+logger.info("📂 Carregando datasets preparados...")
+dataset_dir = "dataset_codet5"
 
-# ================================
-# 2. Carregar e refinar exemplos
-# ================================
-logger.info("🔍 Extraindo e refinando exemplos do MongoDB...")
-dados = []
+def carregar_dataset(split):
+    path = os.path.join(dataset_dir, f"{split}.json")
+    if not os.path.exists(path):
+        logger.error(f"❌ Arquivo não encontrado: {path}")
+        exit(1)
+    with open(path, "r", encoding="utf-8") as f:
+        return Dataset.from_list(json.load(f))
 
-def extrair_diferencas(origem: str, destino: str) -> str:
-    matcher = SequenceMatcher(None, origem.splitlines(), destino.splitlines())
-    linhas_modificadas = []
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag != 'equal':
-            linhas_modificadas.extend(destino.splitlines()[j1:j2])
-    return '\n'.join(linhas_modificadas).strip()
+dataset_train = carregar_dataset("train")
+dataset_val = carregar_dataset("val")
 
-# Casos completos
-for doc in collection.find():
-    entrada = doc.get("codigoOriginal", "").strip()
-    saida = doc.get("codigoCorrigido", "").strip()
-    tipo = doc.get("tipo", "").strip()
-    if entrada and saida:
-        dados.append({
-            "input": f"Corrija este código vulnerável do tipo {tipo}:\n{entrada}",
-            "output": saida
-        })
-
-# Blocos refinados
-for bloco in collection_blocos.find():
-    entrada = bloco.get("blocoAntes", "").strip()
-    saida = bloco.get("blocoDepois", "").strip()
-    tipo = bloco.get("tipo", "").strip()
-    if entrada and saida:
-        refinado = extrair_diferencas(entrada, saida)
-        dados.append({
-            "input": f"Corrija este bloco vulnerável do tipo {tipo}:\n{entrada}",
-            "output": refinado if refinado else saida
-        })
-
-logger.info(f"✅ Total de exemplos coletados e refinados: {len(dados)}")
-if not dados:
-    logger.warning("⚠️ Nenhum exemplo encontrado. Encerrando.")
-    exit(0)
+logger.info(f"✅ Dataset carregado: {len(dataset_train)} exemplos de treino, {len(dataset_val)} exemplos de validação.")
 
 # ================================
-# 3. Dataset HuggingFace
-# ================================
-dataset = Dataset.from_list(dados)
-
-# ================================
-# 4. Carregar modelo e tokenizer
+# 2. Carregar modelo e tokenizer
 # ================================
 model_name = "Salesforce/codet5p-220m"
 logger.info(f"📦 Carregando modelo: {model_name}")
@@ -103,7 +65,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(
 ).to(device)
 
 # ================================
-# 5. Pré-processamento
+# 3. Pré-processamento
 # ================================
 def preprocess(example):
     model_inputs = tokenizer(
@@ -122,17 +84,18 @@ def preprocess(example):
     return model_inputs
 
 logger.info("🔧 Tokenizando exemplos...")
-tokenized_dataset = dataset.map(preprocess, remove_columns=dataset.column_names)
+train_tokenized = dataset_train.map(preprocess, remove_columns=dataset_train.column_names)
+val_tokenized = dataset_val.map(preprocess, remove_columns=dataset_val.column_names)
 
 # ================================
-# 6. Diretórios
+# 4. Diretórios
 # ================================
 output_dir = "./codet5p-220m-finetuned"
 log_dir = "./logs"
 os.makedirs(output_dir, exist_ok=True)
 
 # ================================
-# 7. Argumentos de treino
+# 5. Argumentos de treino
 # ================================
 training_args = TrainingArguments(
     output_dir=output_dir,
@@ -141,6 +104,7 @@ training_args = TrainingArguments(
     gradient_accumulation_steps=4,
     num_train_epochs=3,
     save_strategy="epoch",
+    eval_strategy="epoch",
     save_total_limit=2,
     logging_dir=log_dir,
     logging_steps=1,
@@ -151,17 +115,18 @@ training_args = TrainingArguments(
 )
 
 # ================================
-# 8. Trainer
+# 6. Trainer
 # ================================
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_dataset,
+    train_dataset=train_tokenized,
+    eval_dataset=val_tokenized,
     tokenizer=tokenizer
 )
 
 # ================================
-# 9. Executar treinamento
+# 7. Executar treinamento
 # ================================
 logger.info("🚀 Iniciando treinamento do CodeT5p-220m...")
 try:
