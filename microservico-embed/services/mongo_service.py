@@ -13,12 +13,6 @@ db = client["corretor_db"]
 collection = db["casosCorrigidos"]
 collection_blocos = db["casosCorrigidosBlocos"]
 
-documentos = list(collection.find({"origemId": "67f44b7faaffd76837eebb00"}))
-print(f"Encontrados: {len(documentos)} documentos.")
-for doc in documentos:
-    print(doc)
-
-
 def buscar_todos_documentos():
     return list(collection.find({
         "codigoOriginal": {"$exists": True, "$ne": ""},
