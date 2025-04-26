@@ -4,6 +4,12 @@ from routes.similaridade_routes import router as similaridade_router
 from routes.adicionar_routes import router as adicionar_routes
 from services.processar_embeddings import processar_embeddings
 from services.reindex_service import reindexar_todos, reindexar_blocos
+from services.faiss_io import (
+    carregar_index,
+    salvar_index,
+    carregar_codigo_id_map,
+    salvar_codigo_id_map,
+)
 from services.verificar_reindexacao import (
     verificar_se_precisa_reindexar,
     marcar_reindexacao_feita,
@@ -30,19 +36,24 @@ app.include_router(adicionar_routes)
 async def startup_event():
     logger.info("🚀 Inicializando microserviço...")
 
-    # 🧠 Carregando modelo e tokenizer primeiro
+    # Carregar modelo e tokenizer
     try:
         model_dir = "./codet5p-220m-finetuned"
         model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
         tokenizer = AutoTokenizer.from_pretrained(model_dir)
 
-        index = faiss.IndexFlatL2(768)
-        codigo_id_map = []
-
         app.state.model = model
         app.state.tokenizer = tokenizer
-        app.state.index = index
-        app.state.codigo_id_map = codigo_id_map
+
+        # Carregar índice FAISS e mapa
+        app.state.index = carregar_index(dimension=768)
+        app.state.codigo_id_map = carregar_codigo_id_map()
+        logger.info(
+            f"🔍 Índice FAISS contém {app.state.index.ntotal} vetores carregados."
+        )
+        logger.info(
+            f"🔍 codigo_id_map contém {len(app.state.codigo_id_map)} elementos carregados."
+        )
 
         max_tokens = getattr(model.config, "n_positions", None)
         if max_tokens:
@@ -57,17 +68,43 @@ async def startup_event():
         logger.error("❌ Erro ao carregar o modelo/tokenizer:")
         logger.exception(e)
 
-    # 🔍 Verificando se precisa processar embeddings e reindexar
-    if verificar_se_precisa_reindexar():
-        logger.info(
-            "🔎 Reindexação necessária. Iniciando processamento de embeddings e reindexação..."
-        )
+    # Verificar se precisa reindexar
+    precisa_reindexar = False
 
+    if not verificar_se_precisa_reindexar():
+        logger.info("✅ Controle de reindexação marcado como já feito.")
+    else:
+        logger.info("🔁 Controle indica que reindexação é necessária.")
+        precisa_reindexar = True
+
+    if app.state.index.ntotal == 0 or len(app.state.codigo_id_map) == 0:
+        logger.warning("⚠️ Índice FAISS ou código-ID MAP vazio! Forçando reindexação...")
+        precisa_reindexar = True
+
+    if precisa_reindexar:
+        logger.info("🔎 Iniciando processamento de embeddings e reindexação...")
         processar_embeddings()
-        reindexar_todos()
-        reindexar_blocos()
+        reindexar_todos(app)
+        reindexar_blocos(app)
+
+        logger.info("💾 Salvando índice FAISS e mapa de códigos...")
+        salvar_index(app.state.index)
+        salvar_codigo_id_map(app.state.codigo_id_map)
 
         marcar_reindexacao_feita()
-        logger.info("✅ Reindexação realizada e marcada com sucesso.")
+        logger.info("✅ Reindexação finalizada, tudo salvo e marcado.")
+
+        # 🚨 Verificar se a reindexação de fato preencheu o índice
+        if app.state.index.ntotal == 0 or len(app.state.codigo_id_map) == 0:
+            logger.error(
+                "❌ Reindexação concluída, mas índice FAISS ou código-ID MAP continuam vazios!"
+            )
+            import sys
+
+            sys.exit("Erro crítico: Falha na reindexação. Encerrando aplicação.")
+        else:
+            logger.info(
+                f"✅ Verificação pós-reindexação: índice contém {app.state.index.ntotal} vetores e {len(app.state.codigo_id_map)} códigos."
+            )
     else:
-        logger.info("✅ Reindexação já realizada anteriormente. Pulando processamento.")
+        logger.info("✅ Nenhuma reindexação necessária. Sistema pronto.")
