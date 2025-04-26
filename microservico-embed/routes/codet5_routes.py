@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Body
 from models.schemas import CodeT5Request
-from services.codet5_service.model_handler import model, tokenizer, device, MAX_TOKENS
 from services.codet5_service.suggestion_service import sugerir_codet5
 from services.mongo_service import buscar_blocos_por_origem_id
 from bson import ObjectId
 
 router = APIRouter()
+
 
 @router.post("/codet5_sugerir")
 async def codet5_sugerir(req: CodeT5Request = Body(...)):
@@ -27,11 +27,9 @@ async def codet5_sugerir(req: CodeT5Request = Body(...)):
             linguagem=req.linguagem if hasattr(req, "linguagem") else "desconhecida",
             nome_metodo=req.nome_metodo if hasattr(req, "nome_metodo") else "",
             blocos_exemplo=blocos_exemplo,
-            blocos_correcao=blocos_correcao
+            blocos_correcao=blocos_correcao,
         )
     }
-
-
 
 
 @router.get("/blocos/{origem_id}")
@@ -48,4 +46,3 @@ async def get_blocos(origem_id: str):
             bloco["origemId"] = str(bloco["origemId"])
 
     return {"blocos": blocos}
-

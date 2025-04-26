@@ -1,24 +1,25 @@
-from fastapi import FastAPI, Body
+from fastapi import APIRouter, Body
 from services.embedding_service import EmbeddingRequest
 import torch
+
 import numpy as np
 
-app = FastAPI(title="Microserviço de Correção com IA")
+router = APIRouter()
 
 
 # 🔌 Endpoint para verificar se a API está no ar
-@app.get("/check")
+@router.get("/check")
 def check_connection():
     return {"status": "OK", "message": "Python server is up and running!"}
 
 
 # 🔍 Endpoint para adicionar código ao índice FAISS
-@app.post("/adicionar")
+@router.post("/adicionar")
 async def adicionar_codigo(req: EmbeddingRequest = Body(...)):
-    tokenizer = app.state.tokenizer
-    model = app.state.model
-    index = app.state.index
-    codigo_id_map = app.state.codigo_id_map
+    tokenizer = router.state.tokenizer
+    model = router.state.model
+    index = router.state.index
+    codigo_id_map = router.state.codigo_id_map
 
     entrada = f"{req.tipo}: {req.codigo}"
     tokens = tokenizer(entrada, return_tensors="pt", truncation=True, max_length=512)
