@@ -10,9 +10,11 @@ def fallback_para_java(tipo, exemplo, correcao, alvo):
             "tipo": tipo,
             "exemplo": exemplo,
             "correcao": correcao,
-            "codigo": alvo
+            "codigo": alvo,
         }
-        resposta = requests.post("http://localhost:8080/corrigir/fallback", json=payload)
+        resposta = requests.post(
+            "http://localhost:8081/sugerir-correcao/fallback", json=payload
+        )
         if resposta.ok:
             return resposta.json().get("codigoCorrigido", "")
         else:

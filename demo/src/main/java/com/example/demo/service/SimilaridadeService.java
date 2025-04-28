@@ -103,5 +103,4 @@ public class SimilaridadeService {
         return blocoMaisSimilar;
     }
 
-
 }

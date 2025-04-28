@@ -81,8 +81,59 @@ public class CodeCorrectionService {
         }
     }
 
+//    public String gerarCorrecaoViaChatGPT(String tipo, String codigoOriginal, String codigoCorrigido, String codigoAlvo) {
+//        logger.info("🤖 Iniciando fallback com ChatGPT...");
+//
+//        String prompt;
+//        if (codigoCorrigido == null || codigoCorrigido.isBlank()) {
+//            prompt = PromptUtils.generatePromptWithOutBase(tipo, codigoAlvo);
+//        } else {
+//            prompt = PromptUtils.generatePrompt(tipo, codigoCorrigido, codigoAlvo);
+//        }
+//
+//        try {
+//            JsonNode messagesNode = objectMapper.createArrayNode()
+//                    .add(objectMapper.createObjectNode()
+//                            .put("role", "system")
+//                            .put("content", "Você é um especialista em correção de código seguro."))
+//                    .add(objectMapper.createObjectNode()
+//                            .put("role", "user")
+//                            .put("content", prompt));
+//
+//            JsonNode payloadNode = objectMapper.createObjectNode()
+//                    .put("model", openaiModel)
+//                    .set("messages", messagesNode);
+//
+//            String payload = objectMapper.writeValueAsString(payloadNode);
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.set("Authorization", "Bearer " + openaiApiKey);
+//            headers.setContentType(MediaType.APPLICATION_JSON);
+//            HttpEntity<String> entity = new HttpEntity<>(payload, headers);
+//
+//            String apiUrl = "https://api.openai.com/v1/chat/completions";
+//
+//            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
+//            String responseBody = response.getBody();
+//
+//            logger.info("🧠 Resposta bruta do ChatGPT: {}", tratarResponseGPT(responseBody));
+//
+//            JsonNode json = objectMapper.readTree(responseBody);
+//            String conteudo = json.path("choices").get(0).path("message").path("content").asText().trim();
+//
+//            if (conteudo.isBlank()) {
+//                return "Erro: resposta vazia do modelo ChatGPT.";
+//            }
+//
+//            String somenteCodigo = extrairCodigosMarkdown(conteudo);
+//            return somenteCodigo.isEmpty() ? conteudo : somenteCodigo;
+//
+//        } catch (Exception e) {
+//            logger.error("💥 Erro no fallback com ChatGPT: {}", e.getMessage(), e);
+//            return "Erro ao usar ChatGPT.";
+//        }
+//    }
 
-    // 🔁 Reutiliza seu prompt + regex para fallback
     public String gerarCorrecaoViaChatGPT(String tipo, String codigoOriginal, String codigoCorrigido, String codigoAlvo) {
         logger.info("🤖 Iniciando fallback com ChatGPT...");
 
@@ -118,23 +169,31 @@ public class CodeCorrectionService {
             ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
             String responseBody = response.getBody();
 
-            logger.info("🧠 Resposta bruta do ChatGPT: {}", responseBody);
+            logger.info("🧠 Resposta bruta do ChatGPT: {}", tratarResponseGPT(responseBody));
 
             JsonNode json = objectMapper.readTree(responseBody);
             String conteudo = json.path("choices").get(0).path("message").path("content").asText().trim();
 
             if (conteudo.isBlank()) {
+                logger.error("❌ Conteúdo vazio vindo do ChatGPT.");
                 return "Erro: resposta vazia do modelo ChatGPT.";
             }
 
             String somenteCodigo = extrairCodigosMarkdown(conteudo);
-            return somenteCodigo.isEmpty() ? conteudo : somenteCodigo;
+
+            if (somenteCodigo == null || somenteCodigo.isBlank()) {
+                logger.warn("⚠️ Nenhum código detectado no markdown. Usando conteúdo bruto...");
+                return conteudo;
+            }
+
+            return somenteCodigo;
 
         } catch (Exception e) {
             logger.error("💥 Erro no fallback com ChatGPT: {}", e.getMessage(), e);
             return "Erro ao usar ChatGPT.";
         }
     }
+
 
     public String sugerirComFallback(
             String tipo,
@@ -165,6 +224,25 @@ public class CodeCorrectionService {
         }
 
         return resposta;
+    }
+
+    private String tratarResponseGPT(String responseBody) {
+        try {
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+
+            String content = rootNode.path("choices").get(0).path("message").path("content").asText();
+            int promptTokens = rootNode.path("usage").path("prompt_tokens").asInt();
+            int completionTokens = rootNode.path("usage").path("completion_tokens").asInt();
+            int totalTokens = rootNode.path("usage").path("total_tokens").asInt();
+
+            return String.format(
+                    "\n✅ Conteúdo sugerido:\n%s\n\n🔢 Tokens usados - Prompt: %d | Completion: %d | Total: %d",
+                    content, promptTokens, completionTokens, totalTokens
+            );
+        } catch (Exception e) {
+            logger.error("💥 Erro ao tratar a resposta do ChatGPT: {}", e.getMessage(), e);
+            return "Erro: resposta inválida recebida do ChatGPT.";
+        }
     }
 
 

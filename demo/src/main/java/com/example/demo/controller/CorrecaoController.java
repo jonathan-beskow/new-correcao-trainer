@@ -30,7 +30,7 @@ public class CorrecaoController {
         return ResponseEntity.ok(resposta);
     }
 
-    @PostMapping("/corrigir/fallback")
+    @PostMapping("/fallback")
     public ResponseEntity<SugestaoCorrecaoDTO> corrigirComFallback(@RequestBody ApontamentoDTO dto) {
         SugestaoCorrecaoDTO resposta = correcaoOrquestrador.processarCorrecao(dto, true);
         return ResponseEntity.ok(resposta);

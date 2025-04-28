@@ -12,6 +12,25 @@ public class ApontamentoDTO {
     @JsonIgnore
     private String contexto;
 
+    private String exemplo;
+    private String correcao;
+
+    public String getExemplo() {
+        return exemplo;
+    }
+
+    public void setExemplo(String exemplo) {
+        this.exemplo = exemplo;
+    }
+
+    public String getCorrecao() {
+        return correcao;
+    }
+
+    public void setCorrecao(String correcao) {
+        this.correcao = correcao;
+    }
+
     public String getCodigo() {
         return codigo;
     }
