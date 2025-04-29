@@ -111,7 +111,7 @@ def sugerir_codet5(
                 ).item()
                 scored_blocos.append((b, score))
 
-            scored_blocos = [(b, s) for b, s in scored_blocos if s >= 0.8]
+            scored_blocos = [(b, s) for b, s in scored_blocos if s >= 0.05]
 
             scored_blocos.sort(key=lambda x: x[1], reverse=True)
             for b, score in scored_blocos[:3]:

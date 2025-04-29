@@ -36,7 +36,6 @@ app.include_router(adicionar_routes)
 async def startup_event():
     logger.info("🚀 Inicializando microserviço...")
 
-    # Carregar modelo e tokenizer
     try:
         model_dir = "./codet5p-220m-finetuned"
         model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
@@ -45,9 +44,9 @@ async def startup_event():
         app.state.model = model
         app.state.tokenizer = tokenizer
 
-        # Carregar índice FAISS e mapa
         app.state.index = carregar_index(dimension=768)
         app.state.codigo_id_map = carregar_codigo_id_map()
+
         logger.info(
             f"🔍 Índice FAISS contém {app.state.index.ntotal} vetores carregados."
         )
@@ -67,16 +66,12 @@ async def startup_event():
     except Exception as e:
         logger.error("❌ Erro ao carregar o modelo/tokenizer:")
         logger.exception(e)
+        import sys
 
-    # Verificar se precisa reindexar
-    precisa_reindexar = False
+        sys.exit("Erro crítico: Falha ao carregar modelo/tokenizer.")
 
-    if not verificar_se_precisa_reindexar():
-        logger.info("✅ Controle de reindexação marcado como já feito.")
-    else:
-        logger.info("🔁 Controle indica que reindexação é necessária.")
-        precisa_reindexar = True
-
+    # 🔁 Verificar se precisa reindexar — sempre fora do try
+    precisa_reindexar = verificar_se_precisa_reindexar()
     if app.state.index.ntotal == 0 or len(app.state.codigo_id_map) == 0:
         logger.warning("⚠️ Índice FAISS ou código-ID MAP vazio! Forçando reindexação...")
         precisa_reindexar = True
@@ -90,21 +85,18 @@ async def startup_event():
         logger.info("💾 Salvando índice FAISS e mapa de códigos...")
         salvar_index(app.state.index)
         salvar_codigo_id_map(app.state.codigo_id_map)
-
         marcar_reindexacao_feita()
+
         logger.info("✅ Reindexação finalizada, tudo salvo e marcado.")
 
-        # 🚨 Verificar se a reindexação de fato preencheu o índice
-        if app.state.index.ntotal == 0 or len(app.state.codigo_id_map) == 0:
-            logger.error(
-                "❌ Reindexação concluída, mas índice FAISS ou código-ID MAP continuam vazios!"
-            )
-            import sys
+    if app.state.index.ntotal == 0 or len(app.state.codigo_id_map) == 0:
+        logger.error(
+            "❌ Reindexação concluída, mas índice FAISS ou código-ID MAP continuam vazios!"
+        )
+        import sys
 
-            sys.exit("Erro crítico: Falha na reindexação. Encerrando aplicação.")
-        else:
-            logger.info(
-                f"✅ Verificação pós-reindexação: índice contém {app.state.index.ntotal} vetores e {len(app.state.codigo_id_map)} códigos."
-            )
+        sys.exit("Erro crítico: Falha na reindexação. Encerrando aplicação.")
     else:
-        logger.info("✅ Nenhuma reindexação necessária. Sistema pronto.")
+        logger.info(
+            f"✅ Verificação pós-reindexação: índice contém {app.state.index.ntotal} vetores e {len(app.state.codigo_id_map)} códigos."
+        )

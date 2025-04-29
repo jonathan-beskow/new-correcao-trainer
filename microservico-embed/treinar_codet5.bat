@@ -38,8 +38,11 @@ if %errorlevel% neq 0 (
 :: 1️⃣ Preparar dataset
 :: ===============================
 echo.
+@REM echo 📦 Executando preparação de dataset...
+@REM python preparar_dataset.py
 echo 📦 Executando preparação de dataset...
-python preparar_dataset.py
+python dataset-preparator/DatasetPreparator.py
+
 
 if %errorlevel% neq 0 (
     echo ❌ Erro ao preparar o dataset. Abortando.

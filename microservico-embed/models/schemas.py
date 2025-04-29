@@ -8,18 +8,20 @@ class SimilaridadeRequest(BaseModel):
     k: int = 1
 
 
+class SugestaoResponse(BaseModel):
+    sugestao: str
+
+
 class CodeT5Request(BaseModel):
     tipo: str
     exemplo: str
     correcao: str
     alvo: str
     origem_id: Optional[str] = None
+    linguagem: Optional[str] = None
+    nome_metodo: Optional[str] = None
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "ignore"
-    }
-
+    model_config = {"populate_by_name": True, "extra": "ignore"}
 
 
 class NovoCasoRequest(BaseModel):
