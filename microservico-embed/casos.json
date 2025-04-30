@@ -1,0 +1,116 @@
+[
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var userData = document.getElementById('userInput').value; document.getElementById('output').innerHTML = userData;",
+    "codigoCorrigido": "var userData = document.getElementById('userInput').value; document.getElementById('output').textContent = userData.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var url = location.search.split('=')[1]; document.getElementById('link').href = url;",
+    "codigoCorrigido": "var url = location.search.split('=')[1]; document.getElementById('link').href = encodeURIComponent(url);"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var name = location.search.split('=')[1]; document.getElementById('greeting').innerHTML = 'Hello ' + name;",
+    "codigoCorrigido": "var name = location.search.split('=')[1]; document.getElementById('greeting').textContent = 'Hello ' + name.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var unsafeContent = location.hash.substring(1); document.getElementById('message').innerHTML = unsafeContent;",
+    "codigoCorrigido": "var unsafeContent = location.hash.substring(1); document.getElementById('message').textContent = unsafeContent.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var userInput = document.getElementById('inputField').value; document.getElementById('display').innerHTML = userInput;",
+    "codigoCorrigido": "var userInput = document.getElementById('inputField').value; document.getElementById('display').textContent = userInput.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var parameter = location.hash.substring(1); document.getElementById('parameterDisplay').innerHTML = parameter;",
+    "codigoCorrigido": "var parameter = location.hash.substring(1); document.getElementById('parameterDisplay').textContent = parameter.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var product = location.search.split('=')[1]; document.getElementById('productInfo').innerHTML = product;",
+    "codigoCorrigido": "var product = location.search.split('=')[1]; document.getElementById('productInfo').textContent = product.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var linkParam = new URLSearchParams(location.search).get('url'); document.getElementById('redirectLink').href = linkParam;",
+    "codigoCorrigido": "var linkParam = new URLSearchParams(location.search).get('url'); document.getElementById('redirectLink').href = encodeURI(linkParam);"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var user = location.search.split('=')[1]; document.getElementById('usernameDisplay').innerHTML = user;",
+    "codigoCorrigido": "var user = location.search.split('=')[1]; document.getElementById('usernameDisplay').textContent = user.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var unsafeData = location.hash.substring(1); document.getElementById('result').innerHTML = unsafeData;",
+    "codigoCorrigido": "var unsafeData = location.hash.substring(1); document.getElementById('result').textContent = unsafeData.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var code = new URLSearchParams(location.search).get('code'); document.getElementById('codeOutput').innerHTML = code;",
+    "codigoCorrigido": "var code = new URLSearchParams(location.search).get('code'); document.getElementById('codeOutput').textContent = code.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var urlParam = location.hash.substring(1); document.getElementById('redirect').href = urlParam;",
+    "codigoCorrigido": "var urlParam = location.hash.substring(1); document.getElementById('redirect').href = encodeURIComponent(urlParam);"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var unsafeContent = new URLSearchParams(location.search).get('content'); document.getElementById('contentDisplay').innerHTML = unsafeContent;",
+    "codigoCorrigido": "var unsafeContent = new URLSearchParams(location.search).get('content'); document.getElementById('contentDisplay').textContent = unsafeContent.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var userSearch = location.search.split('=')[1]; document.getElementById('searchDisplay').innerHTML = userSearch;",
+    "codigoCorrigido": "var userSearch = location.search.split('=')[1]; document.getElementById('searchDisplay').textContent = userSearch.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var pageLink = location.hash.substring(1); document.getElementById('pageLink').href = pageLink;",
+    "codigoCorrigido": "var pageLink = location.hash.substring(1); document.getElementById('pageLink').href = encodeURIComponent(pageLink);"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var commentText = document.getElementById('commentBox').value; document.getElementById('commentsDisplay').innerHTML = commentText;",
+    "codigoCorrigido": "var commentText = document.getElementById('commentBox').value; document.getElementById('commentsDisplay').textContent = commentText.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var userInfo = location.search.split('=')[1]; document.getElementById('userProfile').innerHTML = userInfo;",
+    "codigoCorrigido": "var userInfo = location.search.split('=')[1]; document.getElementById('userProfile').textContent = userInfo.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var searchQuery = location.hash.substring(1); document.getElementById('searchResults').innerHTML = searchQuery;",
+    "codigoCorrigido": "var searchQuery = location.hash.substring(1); document.getElementById('searchResults').textContent = searchQuery.replace(/[<>]/g, '');"
+  },
+  {
+    "tipo": "Cross-Site Scripting (DOM)",
+    "linguagem": "JavaScript",
+    "codigoOriginal": "var param = location.search.split('=')[1]; document.getElementById('redirectLink').href = param;",
+    "codigoCorrigido": "var param = location.search.split('=')[1]; document.getElementById('redirectLink').href = encodeURIComponent(param);"
+  }
+]
